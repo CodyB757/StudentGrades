@@ -3,24 +3,26 @@
 #include <iomanip>
 #include <string>
 
+using namespace std;
+
 struct Student {
-    std::string lastName;
+    string lastName;
     int studentID;
     double* scores;
     double average;
     char letterGrade;
 };
 
-bool openInputFile(std::ifstream& inFile, const std::string& filename);
-bool readGradeData(std::ifstream& inFile, Student*& students, int& numStudents, int& numTests);
+bool openInputFile(ifstream& inFile, const string& filename);
+bool readGradeData(ifstream& inFile, Student*& students, int& numStudents, int& numTests);
 void calculateAverages(Student* students, int numStudents, int numTests);
 void assignLetterGrades(Student* students, int numStudents);
 void displayReport(const Student* students, int numStudents, int numTests);
 void releaseMemory(Student*& students, int numStudents);
 
 int main() {
-    const std::string FILENAME = "student_data.txt";
-    std::ifstream inFile;
+    const string FILENAME = "student_data.txt";
+    ifstream inFile;
 
     Student* students = nullptr;
     int numStudents = 0;
@@ -40,35 +42,29 @@ int main() {
 
     calculateAverages(students, numStudents, numTests);
     assignLetterGrades(students, numStudents);
-
-    if (students != nullptr) {
-        for (int i = 0; i < numStudents; ++i) {
-            delete[] students[i].scores;
-        }
-        delete[] students;
-        students = nullptr;
-    }
+    displayReport(students, numStudents, numTests);
+    releaseMemory(students, numStudents);
 
     return 0;
 }
 
-bool openInputFile(std::ifstream& inFile, const std::string& filename) {
+bool openInputFile(ifstream& inFile, const string& filename) {
     inFile.open(filename);
     if (!inFile.is_open()) {
-        std::cerr << "Error: Unable to open input file '" << filename << "'.\n";
+        cerr << "Error: Unable to open input file '" << filename << "'.\n";
         return false;
     }
     return true;
 }
 
-bool readGradeData(std::ifstream& inFile, Student*& students, int& numStudents, int& numTests) {
+bool readGradeData(ifstream& inFile, Student*& students, int& numStudents, int& numTests) {
     if (!(inFile >> numStudents >> numTests)) {
-        std::cerr << "Error: Failed to read file header dimensions.\n";
+        cerr << "Error: Failed to read file header dimensions.\n";
         return false;
     }
 
     if (numStudents <= 0 || numTests <= 0) {
-        std::cerr << "Error: Invalid header dimensions (Students: "
+        cerr << "Error: Invalid header dimensions (Students: "
             << numStudents << ", Tests: " << numTests
             << "). Counts must be positive integers.\n";
         return false;
@@ -82,7 +78,7 @@ bool readGradeData(std::ifstream& inFile, Student*& students, int& numStudents, 
 
     for (int i = 0; i < numStudents; ++i) {
         if (!(inFile >> students[i].lastName >> students[i].studentID)) {
-            std::cerr << "Error: Failed to read record header for student index " << i << ".\n";
+            cerr << "Error: Failed to read record header for student index " << i << ".\n";
             return false;
         }
 
@@ -90,7 +86,7 @@ bool readGradeData(std::ifstream& inFile, Student*& students, int& numStudents, 
 
         for (int j = 0; j < numTests; ++j) {
             if (!(inFile >> students[i].scores[j])) {
-                std::cerr << "Error: Failed to read score " << (j + 1)
+                cerr << "Error: Failed to read score " << (j + 1)
                     << " for student " << students[i].lastName << ".\n";
                 return false;
             }
@@ -139,5 +135,56 @@ void assignLetterGrades(Student* students, int numStudents) {
     }
 }
 
+void displayReport(const Student* students, int numStudents, int numTests) {
+    if (students == nullptr || numStudents <= 0) {
+        return;
+    }
+
+    cout << "\n=================================================================================\n";
+    cout << "                             COURSE GRADE REPORT\n";
+    cout << "=================================================================================\n";
+
+    cout << left << setw(12) << "Last Name"
+        << setw(10) << "ID";
+
+    for (int j = 0; j < numTests; ++j) {
+        string testHeader = "T" + to_string(j + 1);
+        cout << right << setw(8) << testHeader;
+    }
+
+    cout << right << setw(10) << "Average"
+        << setw(8) << "Grade" << "\n";
+
+    cout << "---------------------------------------------------------------------------------\n";
+
+    cout << fixed << setprecision(2);
+    for (int i = 0; i < numStudents; ++i) {
+        cout << left << setw(12) << students[i].lastName
+            << setw(10) << students[i].studentID;
+
+        for (int j = 0; j < numTests; ++j) {
+            cout << right << setw(8) << students[i].scores[j];
+        }
+
+        cout << right << setw(10) << students[i].average
+            << setw(8) << students[i].letterGrade << "\n";
+    }
+
+    cout << "=================================================================================\n\n";
+}
+
 void releaseMemory(Student*& students, int numStudents) {
+    if (students == nullptr) {
+        return;
+    }
+
+    for (int i = 0; i < numStudents; ++i) {
+        if (students[i].scores != nullptr) {
+            delete[] students[i].scores;
+            students[i].scores = nullptr;
+        }
+    }
+
+    delete[] students;
+    students = nullptr;
 }
