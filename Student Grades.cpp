@@ -38,8 +38,8 @@ int main() {
 
     inFile.close();
 
-    std::cout << "Successfully read " << numStudents << " students with "
-        << numTests << " test scores each.\n";
+    calculateAverages(students, numStudents, numTests);
+    assignLetterGrades(students, numStudents);
 
     if (students != nullptr) {
         for (int i = 0; i < numStudents; ++i) {
@@ -98,6 +98,45 @@ bool readGradeData(std::ifstream& inFile, Student*& students, int& numStudents, 
     }
 
     return true;
+}
+
+void calculateAverages(Student* students, int numStudents, int numTests) {
+    if (students == nullptr || numStudents <= 0 || numTests <= 0) {
+        return;
+    }
+
+    for (int i = 0; i < numStudents; ++i) {
+        double total = 0.0;
+        for (int j = 0; j < numTests; ++j) {
+            total += students[i].scores[j];
+        }
+        students[i].average = total / numTests;
+    }
+}
+
+void assignLetterGrades(Student* students, int numStudents) {
+    if (students == nullptr || numStudents <= 0) {
+        return;
+    }
+
+    for (int i = 0; i < numStudents; ++i) {
+        double avg = students[i].average;
+        if (avg >= 90.0) {
+            students[i].letterGrade = 'A';
+        }
+        else if (avg >= 80.0) {
+            students[i].letterGrade = 'B';
+        }
+        else if (avg >= 70.0) {
+            students[i].letterGrade = 'C';
+        }
+        else if (avg >= 60.0) {
+            students[i].letterGrade = 'D';
+        }
+        else {
+            students[i].letterGrade = 'F';
+        }
+    }
 }
 
 void releaseMemory(Student*& students, int numStudents) {
