@@ -43,6 +43,7 @@ int main() {
     calculateAverages(students, numStudents, numTests);
     assignLetterGrades(students, numStudents);
     displayReport(students, numStudents, numTests);
+
     releaseMemory(students, numStudents);
 
     return 0;
